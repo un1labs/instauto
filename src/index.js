@@ -27,8 +27,8 @@ function escapeXpathStr(str) {
 
 const botWorkShiftHours = 16;
 
-const dayMs = 24 * 60 * 60 * 1000;
-const hourMs = 60 * 60 * 1000;
+const dayMs = 24 * 60 * 60 * 100;
+const hourMs = 60 * 60 * 100;
 
 const Instauto = async (db, browser, options) => {
   const {
@@ -57,7 +57,7 @@ const Instauto = async (db, browser, options) => {
     shouldFollowUser = null,
     shouldLikeMedia = null,
 
-    dontUnfollowUntilTimeElapsed = 3 * 24 * 60 * 60 * 1000,
+    dontUnfollowUntilTimeElapsed = 3 * 24 * 60 * 60 * 100,
 
     excludeUsers = [],
 
@@ -152,21 +152,21 @@ const Instauto = async (db, browser, options) => {
   async function checkReachedFollowedUserDayLimit() {
     if (getNumFollowedUsersThisTimeUnit(dayMs) >= maxFollowsPerDay) {
       logger.log('Have reached daily follow/unfollow limit, waiting 10 min');
-      await sleep(10 * 60 * 1000);
+      await sleep(10 * 60 * 100);
     }
   }
 
   async function checkReachedFollowedUserHourLimit() {
     if (getNumFollowedUsersThisTimeUnit(hourMs) >= maxFollowsPerHour) {
       logger.log('Have reached hourly follow rate limit, pausing 10 min');
-      await sleep(10 * 60 * 1000);
+      await sleep(10 * 60 * 100);
     }
   }
 
   async function checkReachedLikedUserDayLimit() {
     if (getNumLikesThisTimeUnit(dayMs) >= maxLikesPerDay) {
       logger.log('Have reached daily like rate limit, pausing 10 min');
-      await sleep(10 * 60 * 1000);
+      await sleep(10 * 60 * 100);
     }
   }
 
@@ -192,7 +192,7 @@ const Instauto = async (db, browser, options) => {
       const response = await gotoUrl(url);
       const status = response.status();
       logger.log('Page loaded');
-      await sleep(2000);
+      await sleep(200);
 
       // https://www.reddit.com/r/Instagram/comments/kwrt0s/error_560/
       // https://github.com/mifi/instauto/issues/60
@@ -204,7 +204,7 @@ const Instauto = async (db, browser, options) => {
 
       logger.info(`Got ${status} - Retrying request later...`);
       if (status === 429) logger.warn('429 Too Many Requests could mean that Instagram suspects you\'re using a bot. You could try to use the Instagram Mobile app from the same IP for a few days first');
-      await sleep((attempt + 1) * 30 * 60 * 1000);
+      await sleep((attempt + 1) * 30 * 60 * 100);
     }
   }
 
@@ -303,14 +303,14 @@ const Instauto = async (db, browser, options) => {
         } catch (err) {
           logger.error('Failed to manually send request', err);
         }
-      }, 5000);
+      }, 500);
 
       try {
         const [foundResponse] = await Promise.all([
           page.waitForResponse((response) => {
             const request = response.request();
             return request.method() === 'GET' && new RegExp(`https:\\/\\/i\\.instagram\\.com\\/api\\/v1\\/users\\/web_profile_info\\/\\?username=${encodeURIComponent(username.toLowerCase())}`).test(request.url());
-          }, { timeout: 30000 }),
+          }, { timeout: 3000 }),
           navigateToUserWithCheck(username),
           // page.waitForNavigation({ waitUntil: 'networkidle0' }),
         ]);
@@ -358,7 +358,7 @@ const Instauto = async (db, browser, options) => {
       const hours = 3;
       logger.error(`Action Blocked, waiting ${hours} hours...`);
       await tryDeleteCookies();
-      await sleep(hours * 60 * 60 * 1000);
+      await sleep(hours * 60 * 60 * 100);
       throw new Error('Aborted operation due to action blocked');
     }
   }
@@ -383,43 +383,43 @@ const Instauto = async (db, browser, options) => {
   }
 
   async function findFollowButton() {
-    let button = await findButtonWithText('Follow');
+    let button = await findButtonWithText('Seguir');
     if (button) return button;
 
-    button = await findButtonWithText('Follow Back');
+    button = await findButtonWithText('Seguir de volta');
     if (button) return button;
 
     return undefined;
   }
 
   async function findUnfollowButton() {
-    let button = await findButtonWithText('Following');
+    let button = await findButtonWithText('Seguindo');
     if (button) return button;
 
-    button = await findButtonWithText('Requested');
+    button = await findButtonWithText('Solicitado');
     if (button) return button;
 
-    let elementHandles = await page.$x("//header//button[*//span[@aria-label='Following']]");
+    let elementHandles = await page.$x("//header//button[*//span[@aria-label='Seguindo']]");
     if (elementHandles.length > 0) return elementHandles[0];
 
-    elementHandles = await page.$x("//header//button[*//span[@aria-label='Requested']]");
+    elementHandles = await page.$x("//header//button[*//span[@aria-label='Solicitado']]");
     if (elementHandles.length > 0) return elementHandles[0];
 
-    elementHandles = await page.$x("//header//button[*//*[name()='svg'][@aria-label='Following']]");
+    elementHandles = await page.$x("//header//button[*//*[name()='svg'][@aria-label='Seguindo']]");
     if (elementHandles.length > 0) return elementHandles[0];
 
-    elementHandles = await page.$x("//header//button[*//*[name()='svg'][@aria-label='Requested']]");
+    elementHandles = await page.$x("//header//button[*//*[name()='svg'][@aria-label='Solicitado']]");
     if (elementHandles.length > 0) return elementHandles[0];
 
     return undefined;
   }
 
   async function findUnfollowConfirmButton() {
-    let elementHandles = await page.$x("//button[text()='Unfollow']");
+    let elementHandles = await page.$x("//button[text()='Deixar de Seguir']");
     if (elementHandles.length > 0) return elementHandles[0];
 
     // https://github.com/mifi/SimpleInstaBot/issues/191
-    elementHandles = await page.$x("//*[@role='button'][contains(.,'Unfollow')]");
+    elementHandles = await page.$x("//*[@role='button'][contains(.,'Deixar de Seguir')]");
     return elementHandles[0];
   }
 
@@ -430,7 +430,7 @@ const Instauto = async (db, browser, options) => {
     if (!elementHandle) {
       if (await findUnfollowButton()) {
         logger.log('We are already following this user');
-        await sleep(5000);
+        await sleep(100);
         return;
       }
 
@@ -441,7 +441,7 @@ const Instauto = async (db, browser, options) => {
 
     if (!dryRun) {
       await elementHandle.click();
-      await sleep(5000);
+      await sleep(100);
 
       await checkActionBlocked();
 
@@ -455,12 +455,12 @@ const Instauto = async (db, browser, options) => {
 
       if (!elementHandle2) {
         logger.log('Button did not change state - Sleeping 1 min');
-        await sleep(60000);
+        await sleep(1000);
         throw new Error('Button did not change state');
       }
     }
 
-    await sleep(1000);
+    await sleep(100);
   }
 
   // See https://github.com/timgrossmann/InstaPy/pull/2345
@@ -486,11 +486,11 @@ const Instauto = async (db, browser, options) => {
     if (!dryRun) {
       if (elementHandle) {
         await elementHandle.click();
-        await sleep(1000);
+        await sleep(100);
         const confirmHandle = await findUnfollowConfirmButton();
         if (confirmHandle) await confirmHandle.click();
 
-        await sleep(5000);
+        await sleep(500);
 
         await checkActionBlocked();
 
@@ -501,7 +501,7 @@ const Instauto = async (db, browser, options) => {
       await addPrevUnfollowedUser(res);
     }
 
-    await sleep(1000);
+    await sleep(100);
 
     return res;
   }
@@ -606,7 +606,7 @@ const Instauto = async (db, browser, options) => {
     for (const image of images) {
       image.click();
 
-      await window.instautoSleep(3000);
+      await window.instautoSleep(300);
 
       const dialog = document.querySelector('*[role=dialog]');
 
@@ -672,7 +672,7 @@ const Instauto = async (db, browser, options) => {
         likeImage();
       }
 
-      await window.instautoSleep(3000);
+      await window.instautoSleep(300);
 
       const closeButtonChild = document.querySelector('svg[aria-label="Close"]');
 
@@ -684,7 +684,7 @@ const Instauto = async (db, browser, options) => {
 
       closeButton.click();
 
-      await window.instautoSleep(5000);
+      await window.instautoSleep(500);
     }
 
     instautoLog('Done liking images');
@@ -750,7 +750,7 @@ const Instauto = async (db, browser, options) => {
 
     await followUser(username);
 
-    await sleep(30000);
+    await sleep(300);
     await throttle();
 
     return true;
@@ -795,7 +795,7 @@ const Instauto = async (db, browser, options) => {
         } catch (err) {
           logger.error(`Failed to process follower ${follower}`, err);
           await takeScreenshot();
-          await sleep(20000);
+          await sleep(200);
         }
       }
     }
@@ -816,12 +816,12 @@ const Instauto = async (db, browser, options) => {
       try {
         await processUserFollowers(username, { maxFollowsPerUser, skipPrivate, enableLikeImages, likeImagesMin, likeImagesMax });
 
-        await sleep(10 * 60 * 1000);
+        await sleep(10 * 60 * 100);
         await throttle();
       } catch (err) {
         logger.error('Failed to process user followers, continuing', username, err);
         await takeScreenshot();
-        await sleep(60 * 1000);
+        await sleep(60 * 100);
       }
     }
   }
@@ -845,19 +845,19 @@ const Instauto = async (db, browser, options) => {
               // to avoid repeatedly unfollowing failed users, flag them as already unfollowed
               logger.log('User not found for unfollow');
               await addPrevUnfollowedUser({ username, time: new Date().getTime(), noActionTaken: true });
-              await sleep(3000);
+              await sleep(300);
             } else {
               const { noActionTaken } = await unfollowUser(username);
 
               if (noActionTaken) {
-                await sleep(3000);
+                await sleep(300);
               } else {
-                await sleep(15000);
+                await sleep(1500);
                 j += 1;
 
                 if (j % 10 === 0) {
                   logger.log('Have unfollowed 10 users since last break. Taking a break');
-                  await sleep(10 * 60 * 1000, 0.1);
+                  await sleep(10 * 60 * 100, 0.1);
                 }
               }
             }
@@ -894,7 +894,7 @@ const Instauto = async (db, browser, options) => {
       } catch (err) {
         logger.error(`Failed to follow user ${username}, continuing`, err);
         await takeScreenshot();
-        await sleep(20000);
+        await sleep(200);
       }
     }
   }
@@ -923,7 +923,7 @@ const Instauto = async (db, browser, options) => {
     logger.log(`Setting language to ${long} (${short})`);
 
     try {
-      await sleep(1000);
+      await sleep(100);
 
       // when logged in, we need to go to account in order to be able to check/set language
       // (need to see the footer)
@@ -932,7 +932,7 @@ const Instauto = async (db, browser, options) => {
       } else {
         await goHome();
       }
-      await sleep(3000);
+      await sleep(300);
       const elementHandles = await page.$x(`//select[//option[@value='${short}' and text()='${long}']]`);
       if (elementHandles.length < 1) throw new Error('Language selector not found');
       logger.log('Found language selector');
@@ -952,36 +952,36 @@ const Instauto = async (db, browser, options) => {
         logger.log('Already English language');
         if (!assumeLoggedIn) {
           await goHome(); // because we were on the settings page
-          await sleep(1000);
+          await sleep(100);
         }
         return;
       }
 
       logger.log('Selected language');
-      await sleep(3000);
+      await sleep(300);
       await goHome();
-      await sleep(1000);
+      await sleep(100);
     } catch (err) {
       logger.error('Failed to set language, trying fallback (cookie)', err);
       // This doesn't seem to always work, hence why it's just a fallback now
       await goHome();
-      await sleep(1000);
+      await sleep(100);
 
       await page.setCookie({
         name: 'ig_lang',
         value: short,
         path: '/',
       });
-      await sleep(1000);
+      await sleep(100);
       await goHome();
-      await sleep(3000);
+      await sleep(300);
     }
   }
 
   const setEnglishLang = async (assumeLoggedIn) => setLang('en', 'English', assumeLoggedIn);
   // const setEnglishLang = async (assumeLoggedIn) => setLang('de', 'Deutsch', assumeLoggedIn);
 
-  async function tryPressButton(elementHandles, name, sleepMs = 3000) {
+  async function tryPressButton(elementHandles, name, sleepMs = 300) {
     try {
       if (elementHandles.length === 1) {
         logger.log(`Pressing button: ${name}`);
@@ -1009,8 +1009,8 @@ const Instauto = async (db, browser, options) => {
   await setEnglishLang(false);
 
   await tryPressButton(await page.$x('//button[contains(text(), "Accept")]'), 'Accept cookies dialog');
-  await tryPressButton(await page.$x('//button[contains(text(), "Only allow essential cookies")]'), 'Accept cookies dialog 2 button 1', 10000);
-  await tryPressButton(await page.$x('//button[contains(text(), "Allow essential and optional cookies")]'), 'Accept cookies dialog 2 button 2', 10000);
+  await tryPressButton(await page.$x('//button[contains(text(), "Only allow essential cookies")]'), 'Accept cookies dialog 2 button 1', 1000);
+  await tryPressButton(await page.$x('//button[contains(text(), "Allow essential and optional cookies")]'), 'Accept cookies dialog 2 button 2', 1000);
 
   if (!(await isLoggedIn())) {
     if (!myUsername || !password) {
@@ -1020,7 +1020,7 @@ const Instauto = async (db, browser, options) => {
 
     try {
       await page.click('a[href="/accounts/login/?source=auth_switcher"]');
-      await sleep(1000);
+      await sleep(100);
     } catch (err) {
       logger.info('No login page button, assuming we are on login form');
     }
@@ -1029,32 +1029,32 @@ const Instauto = async (db, browser, options) => {
     await tryPressButton(await page.$x('//button[contains(text(), "Log In")]'), 'Login form button');
 
     await page.type('input[name="username"]', myUsername, { delay: 50 });
-    await sleep(1000);
+    await sleep(100);
     await page.type('input[name="password"]', password, { delay: 50 });
-    await sleep(1000);
+    await sleep(100);
 
     for (;;) {
       const didClickLogin = await tryClickLogin();
       if (didClickLogin) break;
       logger.warn('Login button not found. Maybe you can help me click it? And also report an issue on github with a screenshot of what you\'re seeing :)');
-      await sleep(6000);
+      await sleep(600);
     }
 
-    await sleepFixed(10000);
+    await sleepFixed(1000);
 
     // Sometimes login button gets stuck with a spinner
     // https://github.com/mifi/SimpleInstaBot/issues/25
     if (!(await isLoggedIn())) {
       logger.log('Still not logged in, trying to reload loading page');
       await page.reload();
-      await sleep(5000);
+      await sleep(5);
     }
 
     let warnedAboutLoginFail = false;
     while (!(await isLoggedIn())) {
       if (!warnedAboutLoginFail) logger.warn('WARNING: Login has not succeeded. This could be because of an incorrect username/password, or a "suspicious login attempt"-message. You need to manually complete the process, or if really logged in, click the Instagram logo in the top left to go to the Home page.');
       warnedAboutLoginFail = true;
-      await sleep(5000);
+      await sleep(500);
     }
 
     // In case language gets reset after logging in

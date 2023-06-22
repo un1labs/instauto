@@ -1,5 +1,7 @@
 'use strict';
 
+require('dotenv').config()
+
 const puppeteer = require('puppeteer'); // eslint-disable-line import/no-extraneous-dependencies
 
 const Instauto = require('.');
@@ -10,6 +12,8 @@ const Instauto = require('.');
 const log = (fn, ...args) => console[fn](new Date().toISOString(), ...args);
 const logger = Object.fromEntries(['log', 'info', 'debug', 'error', 'trace', 'warn'].map((fn) => [fn, (...args) => log(fn, ...args)]));
 
+
+console.log(process.env.NODE);
 const options = {
   cookiesPath: './cookies.json',
 
@@ -78,7 +82,7 @@ const options = {
   try {
     browser = await puppeteer.launch({
       // set headless: false first if you need to debug and see how it works
-      headless: true,
+      headless: false,
 
       args: [
         // Needed for docker
@@ -113,7 +117,7 @@ const options = {
     // Leave room to do following after this too (unfollow 2/3 of maxFollowsPerDay)
     const unfollowedCount = await instauto.unfollowOldFollowed({ ageInDays: 14, limit: options.maxFollowsPerDay * (2 / 3) });
 
-    if (unfollowedCount > 0) await instauto.sleep(10 * 60 * 1000);
+    if (unfollowedCount > 0) await instauto.sleep(10 * 60 * 100);
 
     // List of usernames that we should follow the followers of, can be celebrities etc.
     const usersToFollowFollowersOf = process.env.USERS_TO_FOLLOW != null ? process.env.USERS_TO_FOLLOW.split(',') : [];
@@ -122,16 +126,16 @@ const options = {
     await instauto.followUsersFollowers({
       usersToFollowFollowersOf,
       maxFollowsTotal: options.maxFollowsPerDay - unfollowedCount,
-      skipPrivate: true,
-      enableLikeImages: true,
+      skipPrivate: false,
+      enableLikeImages: false,
       likeImagesMax: 3,
     });
 
-    await instauto.sleep(10 * 60 * 1000);
+    await instauto.sleep(10 * 60 * 100);
 
     console.log('Done running');
 
-    await instauto.sleep(30000);
+    await instauto.sleep(300);
   } catch (err) {
     console.error(err);
   } finally {
