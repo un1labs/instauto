@@ -1033,7 +1033,7 @@ const Instauto = async (db, browser, options) => {
     await sleep(1000);
     await page.type('input[name="password"]', password, { delay: 50 });
     logger.info('Password:', password);
-    await sleep(100);
+    await sleep(1000);
 
     for (;;) {
       const didClickLogin = await tryClickLogin();
