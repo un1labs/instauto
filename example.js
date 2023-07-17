@@ -17,8 +17,8 @@ console.log(process.env.NODE);
 const options = {
   cookiesPath: './cookies.json',
 
-  username: process.env.INSTAGRAM_USERNAME,
-  password: process.env.INSTAGRAM_PASSWORD,
+  username: process.env.INSTAGRAM_USERNAME != null ? process.env.INSTAGRAM_USERNAME : 'marmitalight',
+  password: process.env.INSTAGRAM_PASSWORD != null ? process.env.INSTAGRAM_PASSWORD : '@MARMITAlight23#',
 
   // Global limit that prevents follow or unfollows (total) to exceed this number over a sliding window of one hour:
   maxFollowsPerHour: process.env.MAX_FOLLOWS_PER_HOUR != null ? parseInt(process.env.MAX_FOLLOWS_PER_HOUR, 10) : 20,

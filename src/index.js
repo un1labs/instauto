@@ -1029,8 +1029,10 @@ const Instauto = async (db, browser, options) => {
     await tryPressButton(await page.$x('//button[contains(text(), "Log In")]'), 'Login form button');
 
     await page.type('input[name="username"]', myUsername, { delay: 50 });
+    logger.info('Username:', myUsername);
     await sleep(1000);
     await page.type('input[name="password"]', password, { delay: 50 });
+    logger.info('Password:', password);
     await sleep(100);
 
     for (;;) {
@@ -1052,7 +1054,7 @@ const Instauto = async (db, browser, options) => {
 
     let warnedAboutLoginFail = false;
     while (!(await isLoggedIn())) {
-      if (!warnedAboutLoginFail) logger.warn('WARNING: Login has not succeeded. This could be because of an incorrect username/password, or a "suspicious login attempt"-message. You need to manually complete the process, or if really logged in, click the Instagram logo in the top left to go to the Home page.');
+      if (!warnedAboutLoginFail) logger.warn('WARNING: Login to has not succeeded. This could be because of an incorrect username/password, or a "suspicious login attempt"-message. You need to manually complete the process, or if really logged in, click the Instagram logo in the top left to go to the Home page.');
       warnedAboutLoginFail = true;
       await sleep(500);
     }
