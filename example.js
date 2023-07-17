@@ -115,9 +115,9 @@ const options = {
     // Unfollow previously auto-followed users (regardless of whether or not they are following us back)
     // after a certain amount of days (2 weeks)
     // Leave room to do following after this too (unfollow 2/3 of maxFollowsPerDay)
-    const unfollowedCount = await instauto.unfollowOldFollowed({ ageInDays: 14, limit: options.maxFollowsPerDay * (2 / 3) });
+    const unfollowedCount = await instauto.unfollowOldFollowed({ ageInDays: 44, limit: options.maxFollowsPerDay * (2 / 3) });
 
-    if (unfollowedCount > 0) await instauto.sleep(10 * 60 * 100);
+    if (unfollowedCount > 0) await instauto.sleep(10 * 60 * 1000);
 
     // List of usernames that we should follow the followers of, can be celebrities etc.
     const usersToFollowFollowersOf = process.env.USERS_TO_FOLLOW != null ? process.env.USERS_TO_FOLLOW.split(',') : [];
@@ -131,11 +131,11 @@ const options = {
       likeImagesMax: 3,
     });
 
-    await instauto.sleep(10 * 60 * 100);
+    await instauto.sleep(10 * 60 * 1000);
 
     console.log('Done running');
 
-    await instauto.sleep(300);
+    await instauto.sleep(3000);
   } catch (err) {
     console.error(err);
   } finally {

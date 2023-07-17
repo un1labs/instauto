@@ -192,7 +192,7 @@ const Instauto = async (db, browser, options) => {
       const response = await gotoUrl(url);
       const status = response.status();
       logger.log('Page loaded');
-      await sleep(200);
+      await sleep(2000);
 
       // https://www.reddit.com/r/Instagram/comments/kwrt0s/error_560/
       // https://github.com/mifi/instauto/issues/60
@@ -415,11 +415,11 @@ const Instauto = async (db, browser, options) => {
   }
 
   async function findUnfollowConfirmButton() {
-    let elementHandles = await page.$x("//button[text()='Deixar de Seguir']");
+    let elementHandles = await page.$x("//button[text()='Deixar de seguir']");
     if (elementHandles.length > 0) return elementHandles[0];
 
     // https://github.com/mifi/SimpleInstaBot/issues/191
-    elementHandles = await page.$x("//*[@role='button'][contains(.,'Deixar de Seguir')]");
+    elementHandles = await page.$x("//*[@role='button'][contains(.,'Deixar de seguir')]");
     return elementHandles[0];
   }
 
@@ -430,7 +430,7 @@ const Instauto = async (db, browser, options) => {
     if (!elementHandle) {
       if (await findUnfollowButton()) {
         logger.log('We are already following this user');
-        await sleep(100);
+        await sleep(1000);
         return;
       }
 
@@ -486,11 +486,11 @@ const Instauto = async (db, browser, options) => {
     if (!dryRun) {
       if (elementHandle) {
         await elementHandle.click();
-        await sleep(100);
+        await sleep(1000);
         const confirmHandle = await findUnfollowConfirmButton();
         if (confirmHandle) await confirmHandle.click();
 
-        await sleep(500);
+        await sleep(3000);
 
         await checkActionBlocked();
 
@@ -501,7 +501,7 @@ const Instauto = async (db, browser, options) => {
       await addPrevUnfollowedUser(res);
     }
 
-    await sleep(100);
+    await sleep(1000);
 
     return res;
   }
@@ -1020,7 +1020,7 @@ const Instauto = async (db, browser, options) => {
 
     try {
       await page.click('a[href="/accounts/login/?source=auth_switcher"]');
-      await sleep(100);
+      await sleep(1000);
     } catch (err) {
       logger.info('No login page button, assuming we are on login form');
     }
@@ -1029,7 +1029,7 @@ const Instauto = async (db, browser, options) => {
     await tryPressButton(await page.$x('//button[contains(text(), "Log In")]'), 'Login form button');
 
     await page.type('input[name="username"]', myUsername, { delay: 50 });
-    await sleep(100);
+    await sleep(1000);
     await page.type('input[name="password"]', password, { delay: 50 });
     await sleep(100);
 
@@ -1037,17 +1037,17 @@ const Instauto = async (db, browser, options) => {
       const didClickLogin = await tryClickLogin();
       if (didClickLogin) break;
       logger.warn('Login button not found. Maybe you can help me click it? And also report an issue on github with a screenshot of what you\'re seeing :)');
-      await sleep(600);
+      await sleep(6000);
     }
 
-    await sleepFixed(1000);
+    await sleepFixed(10000);
 
     // Sometimes login button gets stuck with a spinner
     // https://github.com/mifi/SimpleInstaBot/issues/25
     if (!(await isLoggedIn())) {
       logger.log('Still not logged in, trying to reload loading page');
       await page.reload();
-      await sleep(5);
+      await sleep(5000);
     }
 
     let warnedAboutLoginFail = false;
@@ -1059,7 +1059,7 @@ const Instauto = async (db, browser, options) => {
 
     // In case language gets reset after logging in
     // https://github.com/mifi/SimpleInstaBot/issues/118
-    await setEnglishLang(true);
+    await setEnglishLang(false);
 
     // Mobile version https://github.com/mifi/SimpleInstaBot/issues/7
     await tryPressButton(await page.$x('//button[contains(text(), "Save Info")]'), 'Login info dialog: Save Info');
